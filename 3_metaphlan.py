@@ -24,19 +24,17 @@ from subprocess import Popen, PIPE
 
 
 def bash_command(cmd):
-    outfile.write(cmd)
-    outfile.write("\n\n")
+    cmdfile.write(cmd)
+    cmdfile.write("\n\n")
     subp = subprocess.Popen(['/bin/bash', '-c', cmd], stdout=PIPE, stderr=PIPE)
-    subp.wait()
-    theout = subp.stdout.read()
+    stdout, stderr = subp.communicate()
     if verbose:
-        print theout
-    logfile.write(theout)
-    theerr = subp.stderr.read()
+        print stdout
+    logfile.write(stdout)
     if verbose:
-        print theerr
-    logfile.write(theerr)
-    return theout
+        print stderr
+    logfile.write(stderr)
+    return stdout
 
 
 
@@ -58,9 +56,9 @@ if __name__ == "__main__":
     parser.add_argument('-overwrite', dest='overwrite', help='Overwrite existing files and directories.',
                         action='store_true')
     parser.add_argument('-mpa_pkl', metavar='<mpa_pkl>', help='mpa_pkl',
-                        default='/home/hpglab/install/metaphlan2/db_v20/mpa_v20_m200.pkl')
+                        default='/data/install/metaphlan2/db_v20/mpa_v20_m200.pkl')
     parser.add_argument('-bowtie2db', metavar='<bowtie2db>', help='I thoght this was called Bowie2DB and was momentarily happy',
-                        default='/home/hpglab/install/metaphlan2/db_v20/mpa_v20_m200')
+                        default='/data/install/metaphlan2/db_v20/mpa_v20_m200')
     parser.add_argument('-seqprep_output', metavar='<seqprep_output>', help='seqprep_output',
                         default='/data/adaptertrimmed')
     parser.add_argument('-seqprep_output_in_output', metavar='<seqprep_output_in_output>', help='Prepend output directory to seqprep_output',
@@ -103,7 +101,7 @@ if __name__ == "__main__":
     logfile = open(logfilename, 'w')
 
 
-    outfile = open("5_cmds", 'w')
+    cmdfile = open("3_cmds", 'w')
 
     bcin = open(bcfile, 'r')
     bc = []
@@ -163,6 +161,6 @@ if __name__ == "__main__":
 
 
     logfile.close()
-    outfile.close()
+    cmdfile.close()
     print "3_metaphlan.py complete."
     exit(0)

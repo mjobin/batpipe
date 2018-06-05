@@ -27,19 +27,17 @@ from subprocess import Popen, PIPE
 
 
 def bash_command(cmd):
-    outfile.write(cmd)
-    outfile.write("\n\n")
+    cmdfile.write(cmd)
+    cmdfile.write("\n\n")
     subp = subprocess.Popen(['/bin/bash', '-c', cmd], stdout=PIPE, stderr=PIPE)
-    subp.wait()
-    theout = subp.stdout.read()
+    stdout, stderr = subp.communicate()
     if verbose:
-        print theout
-    logfile.write(theout)
-    theerr = subp.stderr.read()
+        print stdout
+    logfile.write(stdout)
     if verbose:
-        print theerr
-    logfile.write(theerr)
-    return theout
+        print stderr
+    logfile.write(stderr)
+    return stdout
 
 
 if __name__ == "__main__":
@@ -100,7 +98,7 @@ if __name__ == "__main__":
     logfile = open(logfilename, 'w')
 
 
-    outfile = open("4b_cmds", 'w')
+    cmdfile = open("4b_cmds", 'w')
 
     newdir = wd + "/contammix"
     if overwrite:
@@ -161,5 +159,5 @@ if __name__ == "__main__":
             os.remove(so_s + ".all.SP.cf.fastq")
 
     logfile.close()
-    outfile.close()
+    cmdfile.close()
     print "2b_contammix.py complete."

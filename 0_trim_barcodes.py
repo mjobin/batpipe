@@ -26,21 +26,18 @@ import fnmatch
 import subprocess
 from subprocess import Popen, PIPE
 
-
 def bash_command(cmd):
-    outfile.write(cmd)
-    outfile.write("\n\n")
+    cmdfile.write(cmd)
+    cmdfile.write("\n\n")
     subp = subprocess.Popen(['/bin/bash', '-c', cmd], stdout=PIPE, stderr=PIPE)
-    subp.wait()
-    theout = subp.stdout.read()
+    stdout, stderr = subp.communicate()
     if verbose:
-        print theout
-    logfile.write(theout)
-    theerr = subp.stderr.read()
+        print stdout
+    logfile.write(stdout)
     if verbose:
-        print theerr
-    logfile.write(theerr)
-    return subp.returncode
+        print stderr
+    logfile.write(stderr)
+    return stdout
 
 if __name__ == "__main__":
 
@@ -85,7 +82,9 @@ if __name__ == "__main__":
     parser.add_argument('-verbose', dest='verbose', help='Print stdout and stderr to console.',
                         action='store_true')
     parser.set_defaults(verbose=False)
-
+    parser.add_argument('-nopos', dest='nopos', help='Do not add/check digital positive files,',
+                        action='store_true')
+    parser.set_defaults(nopos=False)
 
 
     args = parser.parse_args()
@@ -105,18 +104,26 @@ if __name__ == "__main__":
     verbose = bool(args.verbose)
     fqloc = args.fqloc
     threads = args.threads
+    nopos = bool(args.nopos)
 
     os.chdir(wd)
     cwd = os.getcwd()
     print "Working in: ", cwd
 
     today = datetime.date.today()
+    rightnow = str(datetime.datetime.now().time())
+
+
 
     logfilename = "out.trim.m" + str(mismatch) + "." + str(today) + ".log"
     print "Logging to:", logfilename
     logfile = open(logfilename, 'w')
 
-    outfile = open("0_cmds", 'w')
+    cmdfile = None
+    if nopos:
+        cmdfile = open("0_nopos_cmds", 'w')
+    else:
+        cmdfile = open("0_cmds", 'w')
 
     logfile.write("Parameters used: \nDebarcoding mismatch tolerance: " + str(mismatch) + "\n")
     logfile.write("Seqprep Minimum Length: " + str(seqprep_min_length) + "\n")
@@ -140,15 +147,23 @@ if __name__ == "__main__":
         else:
             barcodespresent = False
         bc.append(bcinline)
-    if bformat:
-        bcposline = "bcpos	bcpos	TCGAACA	AGCACAT ATGTGCT TGTTCGA"
-    else:
-        bcposline = "bcpos	bcpos	198	205"
-    nobcposline = "nobcpos	nobcpos		"
-    if barcodespresent:
-        bc.append(bcposline)
-    else:
-        bc.append(nobcposline)
+
+    if not nopos:
+        shutil.copy("/data/raw/bcpos_S00_L00_R1_001.fastq.gz", "/data/raw/bcpos" + rightnow + "_S00_L00_R1_001.fastq.gz")
+        shutil.copy("/data/raw/bcpos_S00_L00_R2_001.fastq.gz", "/data/raw/bcpos" + rightnow + "_S00_L00_R2_001.fastq.gz")
+        shutil.copy("/data/raw/nobcpos_S00_L00_R1_001.fastq.gz", "/data/raw/nobcpos" + rightnow + "_S00_L00_R1_001.fastq.gz")
+        shutil.copy("/data/raw/nobcpos_S00_L00_R2_001.fastq.gz", "/data/raw/nobcpos" + rightnow + "_S00_L00_R2_001.fastq.gz")
+
+
+        if bformat:
+            bcposline = "bcpos"+rightnow+"	bcpos"+rightnow+"	TCGAACA	AGCACAT ATGTGCT TGTTCGA"
+        else:
+            bcposline = "bcpos"+rightnow+"	bcpos"+rightnow+"	198	205"
+        nobcposline = "nobcpos"+rightnow+"	nobcpos"+rightnow+"		"
+        if barcodespresent:
+            bc.append(bcposline)
+        else:
+            bc.append(nobcposline)
 
     bclength = len(bc)
     print "Number of entries: ", bclength
@@ -383,28 +398,30 @@ if __name__ == "__main__":
                             shutil.copyfileobj(f_in, f_out)
 
 
-            #Check digital positive
-            sp_file = seqprep_output + "/SP." + in_sample + ".stderr.txt"
-            spc = []
-            if os.path.isfile(sp_file):
-                spin = open(sp_file, 'r')
-                for spinline in spin:
-                    spc.append(spinline)
+        #Check digital positive
+        sp_file = seqprep_output + "/SP." + in_sample + ".stderr.txt"
+        spc = []
+        if os.path.isfile(sp_file):
+            spin = open(sp_file, 'r')
+            for spinline in spin:
+                spc.append(spinline)
 
-            else:
-                print "SP No file matching " + sp_file + " found. Exiting."
+        else:
+            print "SP No file matching " + sp_file + " found. Exiting."
+            exit(1)
+
+
+        reads_debarcoded = int(str(spc[1].split()[2]).strip())
+
+
+        if in_sample == "bcpos"+rightnow:
+            if reads_debarcoded != 208306:
+                print "ERROR barcode positive control reads debarcoded should read 208306 but reads " + str(reads_debarcoded)
                 exit(1)
-
-            reads_debarcoded = int(str(spc[1].split()[2]).strip())
-
-            if in_sample == "bcpos":
-                if reads_debarcoded != 208306:
-                    print "ERROR barcode positive control reads debarcoded should read 208306 but reads " + str(reads_debarcoded)
-                    exit(1)
-            elif in_sample == "nobcpos":
-                if reads_debarcoded != 247087:
-                    print "ERROR no barcode positive control reads debarcoded should read 247087 " + str(reads_debarcoded)
-                    exit(1)
+        elif in_sample == "nobcpos"+rightnow:
+            if reads_debarcoded != 247087:
+                print "ERROR no barcode positive control reads debarcoded should read 247087 " + str(reads_debarcoded)
+                exit(1)
 
 
         #Rezip files
@@ -481,10 +498,35 @@ if __name__ == "__main__":
             if (fnmatch.fnmatch(name, pattern)):
                 os.symlink(seqprep_output + "/" + name, sp_output_s + "/" + name)
 
+    if not nopos:
+        delfilelist = []
+        # Delete barcode positive files
+        if barcodespresent:
+            delfilelist.append(rawreads + "/bcpos" + rightnow + "_S00_L00_R1_001.fastq.gz")
+            delfilelist.append(rawreads + "/bcpos" + rightnow + "_S00_L00_R2_001.fastq.gz")
 
+            delfilelist.append(bc_trim + "/bcpos" + rightnow + ".woBC_R1.fastq.gz")
+            delfilelist.append(bc_trim + "/bcpos" + rightnow + ".woBC_R2.fastq.gz")
+            delfilelist.append(bc_trim + "/bcpos" + rightnow + ".woBC_R1_unmatched.fastq.gz")
+            delfilelist.append(bc_trim + "/bcpos" + rightnow + ".woBC_R2_unmatched.fastq.gz")
+            delfilelist.append(seqprep_output + "/bcpos" + rightnow + ".F.fq.gz")
+            delfilelist.append(seqprep_output + "/bcpos" + rightnow + ".R.fq.gz")
+            delfilelist.append(seqprep_output + "/bcpos" + rightnow + ".M.fq.gz")
+        else:
+            delfilelist.append(rawreads + "/nobcpos" + rightnow + "_S00_L00_R1_001.fastq.gz")
+            delfilelist.append(rawreads + "/nobcpos" + rightnow + "_S00_L00_R2_001.fastq.gz")
 
+            delfilelist.append(seqprep_output + "/nobcpos" + rightnow + ".F.fq.gz")
+            delfilelist.append(seqprep_output + "/nobcpos" + rightnow + ".R.fq.gz")
+            delfilelist.append(seqprep_output + "/nobcpos" + rightnow + ".M.fq.gz")
+
+            delfilelist.append(bc_trim + "/nobcpos" + rightnow + ".woBC_R1.fastq.gz")
+            delfilelist.append(bc_trim + "/nobcpos" + rightnow + ".woBC_R2.fastq.gz")
+            delfilelist.append(bc_trim + "/nobcpos" + rightnow + ".woBC_R1_unmatched.fastq.gz")
+            delfilelist.append(bc_trim + "/nobcpos" + rightnow + ".woBC_R2_unmatched.fastq.gz")
+        delfilelist.append("posdummy.txt")
 
     logfile.close()
-    outfile.close()
+    cmdfile.close()
     print "0_trim_barcodes complete."
     exit(0)

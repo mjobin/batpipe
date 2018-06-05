@@ -115,15 +115,6 @@ if __name__ == "__main__":
                         default="25")
     parser.add_argument('-max_read_length', metavar='<max_read_length>', help='The maximum read length to consider',
                         default="150")
-    parser.add_argument('-prinseq_lite', metavar='<prinseq_lite>', help='prinseq_lite',
-                        default='/data/scripts/prinseq-lite.pl')
-    parser.add_argument('-prinseq_graphs', metavar='<prinseq_graphs>', help='prinseq_graphs',
-                        default='/data/scripts/prinseq-graphs.pl')
-    parser.add_argument('-combine_paired_end_reads', metavar='<combine_paired_end_reads>',
-                        help='combine_paired_end_reads',
-                        default='/data/scripts/combinePairedEndReads.pl')
-    parser.add_argument('-split_paired_end_reads', metavar='<split_paired_end_reads>', help='split_paired_end_reads',
-                        default='/data/scripts/splitPairedEndReads.pl')
     parser.add_argument('-frag_length_r', metavar='<frag_length_r>', help='frag_length_r',
                         default='/data/scripts/frag_len_hist.R')
     parser.add_argument('-bwaindex', dest='bwaindex', help='Need to index if never used the reference genome before.',
@@ -164,6 +155,14 @@ if __name__ == "__main__":
                         default="/data/malt/nr/")
     parser.add_argument('-maltblast', metavar='<maltblast>', help='MALT BLAST type.',
                         default="BlastX")
+    parser.add_argument('-megandir', metavar='<megandir>', help='MEGAN6 directory',
+                        default='/opt/megan')
+    parser.add_argument('-krakendb', metavar='<krakendb>', help='KrakenDB location',
+                        default='/var/db/krakenDB')
+    parser.add_argument('-blastdir', metavar='<blastdir>', help='BLAST db directory',
+                        default='/var/db/BLAST')
+    parser.add_argument('-scriptsdir', metavar='<scriptsdir>', help='Default scripts directory',
+                        default='/data/scripts')
 
     # TWO A
     parser.add_argument('-mt311', metavar='<mt311>', help='mt311',
@@ -261,10 +260,6 @@ if __name__ == "__main__":
     max_misincorp_frequency = args.max_misincorp_frequency
     read_plot_length = args.read_plot_length
     max_read_length = args.max_read_length
-    prinseq_lite = args.prinseq_lite
-    prinseq_graphs = args.prinseq_graphs
-    combine_paired_end_reads = args.combine_paired_end_reads
-    split_paired_end_reads = args.split_paired_end_reads
     frag_length_r = args.frag_length_r
     bwaindex = bool(args.bwaindex)
     nomia = bool(args.nomia)
@@ -290,6 +285,10 @@ if __name__ == "__main__":
     clipright = args.clipright
     maltdb = args.maltdb
     maltblast = args.maltblast
+    megandir = args.megandir
+    krakendb = args.krakendb
+    blastdir = args.blastdir
+    scriptsdir = args.scriptsdir
 
     onedict["mtdna"] = mtdna
     onedict["mia_ref"] = mia_ref
@@ -301,10 +300,6 @@ if __name__ == "__main__":
     onedict["max_misincorp_frequency"] = max_misincorp_frequency
     onedict["read_plot_length"] = read_plot_length
     onedict["max_read_length"] = max_read_length
-    onedict["prinseq_lite"] = prinseq_lite
-    onedict["prinseq_graphs"] = prinseq_graphs
-    onedict["combine_paired_end_reads"] = combine_paired_end_reads
-    onedict["split_paired_end_reads"] = split_paired_end_reads
     onedict["frag_length_r"] = frag_length_r
     onedict["bwaindex"] = bwaindex
     onedict["nomia"] = nomia
@@ -324,6 +319,10 @@ if __name__ == "__main__":
     onedict["maltdb"] = maltdb
     onedict["maltblast"] = maltblast
     onedict["bformat"] = bformat
+    onedict["megandir"] = megandir
+    onedict["krakendb"] = krakendb
+    onedict["blastdir"] = blastdir
+    onedict["scriptsdir"] = scriptsdir
 
     # TWO_A
     mt311 = args.mt311

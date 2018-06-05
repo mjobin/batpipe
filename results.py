@@ -30,19 +30,17 @@ from subprocess import Popen, PIPE
 
 
 def bash_command(cmd):
-    outfile.write(cmd)
-    outfile.write("\n\n")
+    cmdfile.write(cmd)
+    cmdfile.write("\n\n")
     subp = subprocess.Popen(['/bin/bash', '-c', cmd], stdout=PIPE, stderr=PIPE)
-    subp.wait()
-    theout = subp.stdout.read()
+    stdout, stderr = subp.communicate()
     if verbose:
-        print theout
-    logfile.write(theout)
-    theerr = subp.stderr.read()
+        print stdout
+    logfile.write(stdout)
     if verbose:
-        print theerr
-    logfile.write(theerr)
-    return theout
+        print stderr
+    logfile.write(stderr)
+    return stdout
 
 
 if __name__ == "__main__":
@@ -118,7 +116,7 @@ if __name__ == "__main__":
 
     today = datetime.date.today()
 
-    outfile = open("results_cmds", 'w')
+    cmdfile = open("results_cmds", 'w')
 
     arefs = ["/data/genomes/hg19.fa", "/data/genomes/rCRS.fas"]
     for ref in refs:
@@ -135,15 +133,6 @@ if __name__ == "__main__":
             barcodespresent = False
         bc.append(bcinline)
 
-    if bformat:
-        bcposline = "bcpos	bcpos	TCGAACA	AGCACAT ATGTGCT TGTTCGA"
-    else:
-        bcposline = "bcpos	bcpos	198	205"
-    nobcposline = "nobcpos	nobcpos		"
-    if barcodespresent:
-        bc.append(bcposline)
-    else:
-        bc.append(nobcposline)
 
     bclength = len(bc)
     print "Number of entries: ", bclength
@@ -345,17 +334,6 @@ if __name__ == "__main__":
                 print "Reads_debarcoded is 0. Are you sure you have the right indexes?"
             else:
                 percentmerged = str((100.0 * float(merged) / rdbf))
-
-            if in_sample == "bcpos":
-                if reads_debarcoded != 208306:
-                    print "ERROR barcode positive control reads debarcoded should read 208306 but reads " + str(
-                        reads_debarcoded)
-                    exit(1)
-            elif in_sample == "nobcpos":
-                if reads_debarcoded != 247087:
-                    print "ERROR no barcode positive control reads debarcoded should read 247087 " + str(
-                        reads_debarcoded)
-                    exit(1)
 
             rrf = float(rawreads)
             if rrf == 0:
@@ -790,16 +768,6 @@ if __name__ == "__main__":
             wadapters = int(spc[3].split()[3].strip())
             discarded = int(spc[4].split()[2].strip())
 
-        if in_sample == "bcpos":
-            if reads_debarcoded != 208306:
-                print "ERROR barcode positive control reads debarcoded should read 208306 but reads " + str(
-                    reads_debarcoded)
-                exit(1)
-        elif in_sample == "nobcpos":
-            if reads_debarcoded != 247087:
-                print "ERROR no barcode positive control reads debarcoded should read 247087 " + str(reads_debarcoded)
-                exit(1)
-
         rdbf = float(reads_debarcoded)
         if rdbf == 0:
             percentmerged = "N/A"
@@ -867,20 +835,7 @@ if __name__ == "__main__":
         else:
             percent_all_endog = str((100 * float(all_filtered_bam)) / float(rawreads))
 
-        pcmendf = round(float(percent_m_endog), 2)
 
-        if in_sample == "bcpos":
-            # print "DIGITAL POSITIVE % ENDOGENOUS for hg19: " + str(pcmendf)
-            if pcmendf < 54 or pcmendf > 55:
-                print "ERROR barcode positive control percent_m_endog should read close to 54.71 but reads " + str(
-                    pcmendf)
-                exit(1)
-        elif in_sample == "nobcpos":
-            # print "DIGITAL POSITIVE % ENDOGENOUS for hg19: " + str(pcmendf)
-            if pcmendf < 52 or pcmendf > 53:
-                print "ERROR no barcode positive control percent_m_endog should read close to 52.46 but is " + str(
-                    pcmendf)
-                exit(1)
 
         chkpipe = subprocess.Popen(
             ['/bin/bash', '-c', "samtools view " + bo1_s + "_allreads.cf.*.q*.s.rd.bam "], stdout=PIPE)
@@ -1068,13 +1023,14 @@ if __name__ == "__main__":
                 cxc.append(ctline)
 
         for cx in cxc:
-            cxcols = cx.split()
+            cxcols = cx.split("\t")
             if cxcols[0] == out_sample:
-                ct_sdpos = cxcols[1]
-                ct_forig = cxcols[2]
-                ct_fcontam = cxcols[3]
-                ct_ftotal = cxcols[4]
-                ct_ct = cxcols[5]
+                ct_sdpos = cxcols[1].strip()
+                ct_forig = cxcols[2].strip()
+                ct_fcontam = cxcols[3].strip()
+                ct_ftotal = cxcols[4].strip()
+                ct_ct = cxcols[5].strip()
+
 
         # 4 PMDTools
         pmd_filtered_bam = bash_command(
@@ -1227,7 +1183,7 @@ if __name__ == "__main__":
 
         sumfile.write("\n")
     sumfile.close()
-
+    cmdfile.close()
     logfile.close()
     print "results.py complete."
     exit(0)

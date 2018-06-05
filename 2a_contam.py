@@ -25,21 +25,17 @@ from subprocess import Popen, PIPE
 
 
 def bash_command(cmd):
-    outfile.write(cmd)
-    outfile.write("\n\n")
+    cmdfile.write(cmd)
+    cmdfile.write("\n\n")
     subp = subprocess.Popen(['/bin/bash', '-c', cmd], stdout=PIPE, stderr=PIPE)
-    subp.wait()
-    theout = subp.stdout.read()
+    stdout, stderr = subp.communicate()
     if verbose:
-        print theout
-    logfile.write(theout)
-    theerr = subp.stderr.read()
+        print stdout
+    logfile.write(stdout)
     if verbose:
-        print theerr
-    logfile.write(theerr)
-    return theout
-
-
+        print stderr
+    logfile.write(stderr)
+    return stdout
 
 
 if __name__ == "__main__":
@@ -83,7 +79,7 @@ if __name__ == "__main__":
 
     logfile = open(logfilename, 'w')
 
-    outfile = open("2a_cmds", 'w')
+    cmdfile = open("2a_cmds", 'w')
 
 
     newdir = wd + "/ccheck_results"
@@ -133,6 +129,7 @@ if __name__ == "__main__":
         malnname = None
         oldmalnint = 0
         for name in files:
+
             if (fnmatch.fnmatch(name, pattern)):
                 malncols = name.split(".")
                 malnlen = len(malncols)
@@ -145,6 +142,7 @@ if __name__ == "__main__":
                         malnname = name
                         oldmalnint = malnint
 
+
         rawout = bash_command("ccheck -a -r " + mt311 + " " + mia_output + "/" + malnname)
         rawlines = rawout.splitlines()
 
@@ -155,13 +153,17 @@ if __name__ == "__main__":
         cont_rate = "???"
         fragment_total = "N/A"
         if rl >= 11:
-            diag = rawlines[7].split(":")[1]
-            fragment_orig = rawlines[9].split(":")[1]
-            fragment_contam = rawlines[10].split(":")[1]
-            if fragment_orig.isdigit() and fragment_contam.isdigit():
-                fragment_total_f = int(fragment_orig) + int(fragment_contam)
+            diag = rawlines[7].strip().split(":")[1].strip()
+            fragment_orig = rawlines[9].split(":")[1].strip()
+            fragment_contam_cols = rawlines[10].split(":")[1].strip()
+            fragment_contam = fragment_contam_cols.split()[0]
+            cont_rate = ' '.join(fragment_contam_cols.split()[1:])
 
-        rawoutline = sample + "\t" + diag + "\t" +  fragment_orig + "\t" + fragment_contam + "\t" +  fragment_total + "\t" +  cont_rate + "\n"
+            if fragment_orig.isdigit() and fragment_contam.isdigit():
+
+                fragment_total = int(fragment_orig) + int(fragment_contam)
+
+        rawoutline = sample + "\t" + str(diag) + "\t" + str(fragment_orig) + "\t" + str(fragment_contam) + "\t" + str(fragment_total) + "\t" +  str(cont_rate) + "\n"
         rawfile.write(rawoutline)
         rawdic[sample] = rawoutline
 
@@ -176,15 +178,16 @@ if __name__ == "__main__":
         cont_rate_f = "???"
         fragment_total_f = "N/A"
         if frl >= 11:
-            diag_f = forcedlines[7].split(":")[1]
-            # # diag_f = cols[1]
-            fragment_orig_f = forcedlines[9].split(":")[1]
-            fragment_contam_f = forcedlines[10].split(":")[1]
+            diag_f = forcedlines[7].split(":")[1].strip()
+            fragment_orig_f = forcedlines[9].split(":")[1].strip()
+            fragment_contam_cols_f = forcedlines[10].split(":")[1].strip()
+            fragment_contam_f = fragment_contam_cols_f.split()[0]
+            cont_rate_f = ' '.join(fragment_contam_cols_f.split()[1:])
             if fragment_orig_f.isdigit() and fragment_contam_f.isdigit():
                 fragment_total_f = int(fragment_orig_f) + int(fragment_contam_f)
 
 
-        forcedoutline = sample + "\t" + diag_f + "\t" + fragment_orig_f + "\t" + fragment_contam_f + "\t" + fragment_total_f + "\t" +  cont_rate_f + "\n"
+        forcedoutline = sample + "\t" + str(diag_f) + "\t" + str(fragment_orig_f) + "\t" + str(fragment_contam_f) + "\t" + str(fragment_total_f) + "\t" +  str(cont_rate_f) + "\n"
         forcedfile.write(forcedoutline)
         forceddic[sample] = forcedoutline
 
@@ -203,7 +206,7 @@ if __name__ == "__main__":
 
 
     logfile.close()
-    outfile.close()
+    cmdfile.close()
     rawfile.close()
     forcedfile.close()
     rawsortfile.close()

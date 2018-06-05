@@ -26,19 +26,17 @@ from subprocess import Popen, PIPE
 
 
 def bash_command(cmd):
-    outfile.write(cmd)
-    outfile.write("\n\n")
+    cmdfile.write(cmd)
+    cmdfile.write("\n\n")
     subp = subprocess.Popen(['/bin/bash', '-c', cmd], stdout=PIPE, stderr=PIPE)
-    subp.wait()
-    theout = subp.stdout.read()
+    stdout, stderr = subp.communicate()
     if verbose:
-        print theout
-    logfile.write(theout)
-    theerr = subp.stderr.read()
+        print stdout
+    logfile.write(stdout)
     if verbose:
-        print theerr
-    logfile.write(theerr)
-    return theout
+        print stderr
+    logfile.write(stderr)
+    return stdout
 
 
 def bwa_align_se(refname, refloc, bso_s, btail, bbwa_output, bsample, bq):
@@ -106,15 +104,6 @@ if __name__ == "__main__":
                         default="25")
     parser.add_argument('-max_read_length', metavar='<max_read_length>', help='The maximum read length to consider',
                         default="150")
-    parser.add_argument('-prinseq_lite', metavar='<prinseq_lite>', help='prinseq_lite',
-                        default='/data/scripts/prinseq-lite.pl')
-    parser.add_argument('-prinseq_graphs', metavar='<prinseq_graphs>', help='prinseq_graphs',
-                        default='/data/scripts/prinseq-graphs.pl')
-    parser.add_argument('-combine_paired_end_reads', metavar='<combine_paired_end_reads>',
-                        help='combine_paired_end_reads',
-                        default='/data/scripts/combinePairedEndReads.pl')
-    parser.add_argument('-split_paired_end_reads', metavar='<split_paired_end_reads>', help='split_paired_end_reads',
-                        default='/data/scripts/splitPairedEndReads.pl')
     parser.add_argument('-frag_length_r', metavar='<frag_length_r>', help='frag_length_r',
                         default='/data/scripts/frag_len_hist.R')
     parser.add_argument('-seqprep_output', metavar='<seqprep_output>', help='seqprep_output',
@@ -163,6 +152,27 @@ if __name__ == "__main__":
     parser.add_argument('-skipprinseq', dest='skipprinseq', help='Skip the prinseq part of script.',
                         action='store_true')
     parser.set_defaults(overwrite=False)
+    parser.add_argument('-chk_ref', metavar='<chk_ref>', help='Mapping references for checking digital positives',
+                        default='/data/genomes/hg19.fa')
+    parser.add_argument('-bcpos_chk', metavar='<bcpos_chk>', help='Check value for barcoded digital positives',
+                        default="101080")
+    parser.add_argument('-nobcpos_chk', metavar='no<bcpos_chk>', help='Check value for non-barcoded digital positives',
+                        default="112685")
+    parser.add_argument('-rawreads', metavar='<rawreads>', help='Location of raw reads',
+                        default='/data/raw')
+    parser.add_argument('-bc_trim', metavar='<bc_trim>', help='Location of barcode trimmed files',
+                        default='/data/barcodetrimmed')
+    parser.add_argument('-megandir', metavar='<megandir>', help='MEGAN6 directory',
+                        default='/opt/megan')
+    parser.add_argument('-krakendb', metavar='<krakendb>', help='KrakenDB location',
+                        default='/var/db/krakenDB')
+    parser.add_argument('-blastdir', metavar='<blastdir>', help='BLAST db directory',
+                        default='/var/db/BLAST')
+    parser.add_argument('-scriptsdir', metavar='<scriptsdir>', help='Default scripts directory',
+                        default='/data/scripts')
+
+
+
 
     args = parser.parse_args()
     wd = args.wd
@@ -179,14 +189,11 @@ if __name__ == "__main__":
     max_read_length = args.max_read_length
     bformat = bool(args.bformat)
 
-    prinseq_lite = args.prinseq_lite
-    prinseq_graphs = args.prinseq_graphs
+
     skipprinseq = bool(args.skipprinseq)
-    combine_paired_end_reads = args.combine_paired_end_reads
-    split_paired_end_reads = args.split_paired_end_reads
+
 
     frag_length_r = args.frag_length_r
-    seqprep_output = args.seqprep_output
     bwaindex = bool(args.bwaindex)
     nomia = bool(args.nomia)
     malt = bool(args.malt)
@@ -202,6 +209,17 @@ if __name__ == "__main__":
     maltdb = args.maltdb
     maltblast = args.maltblast
 
+    chk_ref = args.chk_ref
+    bcpos_chk = args.bcpos_chk
+    nobcpos_chk = args.nobcpos_chk
+    rawreads = args.rawreads
+    bc_trim = args.bc_trim
+    seqprep_output = args.seqprep_output
+    megandir = args.megandir
+    krakendb = args.krakendb
+    blastdir = args.blastdir
+    scriptsdir = args.scriptsdir
+
     arefs = ["/data/genomes/hg19.fa", "/data/genomes/rCRS.fas"]
     for ref in refs:
         arefs.append(ref)
@@ -211,9 +229,11 @@ if __name__ == "__main__":
     print "Working in: ", cwd
 
     today = datetime.date.today()
+    rightnow = str(datetime.datetime.now().time())
     logfilename = wd + "/out.map." + str(today) + ".log"
-    print "Logging to: ", logfilename
     logfile = open(logfilename, 'w')
+    print "Logging to: ", logfilename
+
 
     refdic = {}
     logfile.write("Reference sequences used: \n")
@@ -224,7 +244,10 @@ if __name__ == "__main__":
         logfile.write(ref + "\n")
     logfile.write("-------------------\n")
 
-    outfile = open("1_cmds", 'w')
+    chkbasename = os.path.basename(chk_ref)
+    chk_name, fileext = os.path.splitext(chkbasename)
+
+    cmdfile = open("1_cmds", 'w')
 
     newdir = wd + "/Frag_lengths"
     if os.path.exists(newdir):
@@ -244,6 +267,15 @@ if __name__ == "__main__":
     logfile.write("Map quality cutoff = " + q + "\n")
     logfile.write("\n-------------------------------------------------\n")
 
+
+
+    shutil.copy("/data/raw/bcpos_S00_L00_R1_001.fastq.gz", "/data/raw/bcpos-" + rightnow + "_S00_L00_R1_001.fastq.gz")
+    shutil.copy("/data/raw/bcpos_S00_L00_R2_001.fastq.gz", "/data/raw/bcpos-" + rightnow + "_S00_L00_R2_001.fastq.gz")
+    shutil.copy("/data/raw/nobcpos_S00_L00_R1_001.fastq.gz", "/data/raw/nobcpos-" + rightnow + "_S00_L00_R1_001.fastq.gz")
+    shutil.copy("/data/raw/nobcpos_S00_L00_R2_001.fastq.gz", "/data/raw/nobcpos-" + rightnow + "_S00_L00_R2_001.fastq.gz")
+
+
+
     bcin = open(bcfile, 'r')
     bc = []
     barcodespresent = True
@@ -254,15 +286,35 @@ if __name__ == "__main__":
         else:
             barcodespresent = False
         bc.append(bcinline)
-    if bformat:
-        bcposline = "bcpos	bcpos	TCGAACA	AGCACAT ATGTGCT TGTTCGA"
+
+
+    posdummy = open("posdummy.txt", 'w')
+    if barcodespresent:
+        if bformat:
+            posdummy.write("bcpos-"+rightnow+"	bcpos-"+rightnow+"	TCGAACA	AGCACAT ATGTGCT TGTTCGA")
+        else:
+            posdummy.write("bcpos-"+rightnow+"	bcpos-"+rightnow+"	198	205")
     else:
-        bcposline = "bcpos	bcpos	198	205"
-    nobcposline = "nobcpos	nobcpos		"
+        posdummy.write("nobcpos-"+rightnow+"	nobcpos-"+rightnow+"		")
+
+
+    posdummy.close()
+    print "Running 0_trim_barcodes on digital positive"
+    posdummyline = "0_trim_barcodes.py -bc_file posdummy.txt -overwrite -nopos"
+    if bformat:
+        posdummyline += " -bformat"
+    bash_command(posdummyline)
+
+    if bformat:
+        bcposline = "bcpos-"+rightnow+"	bcpos-"+rightnow+"	TCGAACA	AGCACAT ATGTGCT TGTTCGA"
+    else:
+        bcposline = "bcpos-"+rightnow+"	bcpos-"+rightnow+"	198	205"
+    nobcposline = "nobcpos-"+rightnow+"	nobcpos-"+rightnow+"		"
     if barcodespresent:
         bc.append(bcposline)
     else:
         bc.append(nobcposline)
+
 
     bclength = len(bc)
     print "Number of entries: ", bclength
@@ -300,44 +352,45 @@ if __name__ == "__main__":
     flength = len(flist)
     print "Number of entries: ", flength
 
-    print "\nComplexity filtering using prinseq..."
-    bar = progressbar.ProgressBar()
-    for i in bar(range(bclength)):
-        bcline = bc[i]
-        bccols = bcline.split()
-        in_sample = bccols[0]
-        out_sample = bccols[1]
-        output = wd + "/" + out_sample
-        so_s = seqprep_output + "/" + in_sample
+    if not skipprinseq:
+        print "\nComplexity filtering using prinseq..."
+        bar = progressbar.ProgressBar()
+        for i in bar(range(bclength)):
+            bcline = bc[i]
+            bccols = bcline.split()
+            in_sample = bccols[0]
+            out_sample = bccols[1]
+            output = wd + "/" + out_sample
+            so_s = seqprep_output + "/" + in_sample
 
-        logfile.write('Prinseq removing low complexity from merged ' + in_sample + "\n")
-        bash_command(
-            "perl " + prinseq_lite + " -fastq " + so_s + ".M.fq -out_good " + so_s + ".M.cf -out_bad null -lc_method dust -lc_threshold 7 -line_width 0")
+            logfile.write('Prinseq removing low complexity from merged ' + in_sample + "\n")
+            bash_command(
+                "perl " + scriptsdir + "/prinseq-lite.pl -fastq " + so_s + ".M.fq -out_good " + so_s + ".M.cf -out_bad null -lc_method dust -lc_threshold 7 -line_width 0")
 
-        bash_command(
-            "perl " + combine_paired_end_reads + " " + so_s + ".F.fq " + so_s + ".R.fq " + so_s + ".uM_combined.fastq")
+            bash_command(
+                "perl " + scriptsdir + "/combinePairedEndReads.pl " + so_s + ".F.fq " + so_s + ".R.fq " + so_s + ".uM_combined.fastq")
 
-        bash_command(
-            "perl " + prinseq_lite + " -fastq " + so_s + ".uM_combined.fastq -out_good " + so_s + ".uM_combined.cf -out_bad null -lc_method dust -lc_threshold 7 -line_width 0")
+            bash_command(
+                "perl " + scriptsdir + "/prinseq-lite.pl -fastq " + so_s + ".uM_combined.fastq -out_good " + so_s + ".uM_combined.cf -out_bad null -lc_method dust -lc_threshold 7 -line_width 0")
 
-        bash_command("perl " + split_paired_end_reads + " " + so_s + ".uM_combined.cf.fastq")
+            bash_command("perl " + scriptsdir + "/splitPairedEndReads.pl " + so_s + ".uM_combined.cf.fastq")
 
-        if os.path.isfile(so_s + ".uM_combined.cf.fastq_1"):
-            shutil.move(so_s + ".uM_combined.cf.fastq_1", so_s + ".F.cf.fastq")
-            filestorezip.append(so_s + ".F.cf.fastq")
-        if os.path.isfile(so_s + ".uM_combined.cf.fastq_2"):
-            shutil.move(so_s + ".uM_combined.cf.fastq_2", so_s + ".R.cf.fastq")
-            filestorezip.append(so_s + ".R.cf.fastq")
+            if os.path.isfile(so_s + ".uM_combined.cf.fastq_1"):
+                shutil.move(so_s + ".uM_combined.cf.fastq_1", so_s + ".F.cf.fastq")
+                filestorezip.append(so_s + ".F.cf.fastq")
+            if os.path.isfile(so_s + ".uM_combined.cf.fastq_2"):
+                shutil.move(so_s + ".uM_combined.cf.fastq_2", so_s + ".R.cf.fastq")
+                filestorezip.append(so_s + ".R.cf.fastq")
 
-        filestorezip.append(so_s + ".M.cf.fastq")
+            filestorezip.append(so_s + ".M.cf.fastq")
 
-        logfile.write("Removing " + in_sample + "\n")
-        sopattern = in_sample + ".uM_combined*.fastq"
-        files = os.listdir(seqprep_output)
-        soname = None
-        for name in files:
-            if (fnmatch.fnmatch(name, sopattern)):
-                os.remove(seqprep_output + "/" + name)
+            logfile.write("Removing " + in_sample + "\n")
+            sopattern = in_sample + ".uM_combined*.fastq"
+            files = os.listdir(seqprep_output)
+            soname = None
+            for name in files:
+                if (fnmatch.fnmatch(name, sopattern)):
+                    os.remove(seqprep_output + "/" + name)
 
     print "\nCreating BWA directories..."
     bar = progressbar.ProgressBar()
@@ -480,6 +533,40 @@ if __name__ == "__main__":
             bash_command(
                 "samtools idxstats " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.rd.bam > " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.rd.idxstats")
 
+
+
+    #Check digital positive
+    co_s = ""
+
+    if barcodespresent:
+        co_s += "bcpos-" + rightnow
+    else:
+        co_s += "nobcpos-" + rightnow
+
+    co_s += "/BWA_" + chk_name + "/"
+
+    if barcodespresent:
+        co_s += "bcpos-" + rightnow
+    else:
+        co_s += "nobcpos-" + rightnow
+
+
+    chk_merged_filtered_bam = bash_command("samtools view -c " + co_s + ".M.cf.*.q*.s.bam").strip()
+
+
+
+    if barcodespresent:
+        if chk_merged_filtered_bam != bcpos_chk:
+            print "ERROR barcode positive control merged_filtered_bam  should read close to " + bcpos_chk + " but reads " + str(
+                chk_merged_filtered_bam)
+            exit(1)
+    else:
+
+        if chk_merged_filtered_bam != nobcpos_chk:
+            print "ERROR no barcode positive control merged_filtered_bam should read close to" + nobcpos_chk + " but is " + str(
+                chk_merged_filtered_bam)
+            exit(1)
+
     # Compute fragment length distributions of all reads in the library (mapped)
     for key, value in refdic.iteritems():
         print "\nFragment length distributions from sorted bam file for " + key + "..."
@@ -587,7 +674,7 @@ if __name__ == "__main__":
             # Collapse identical reads - forward, reverse, and 5' duplicates - MEGAN and MIA (capture only)
             logfile.write("Collapsing identical reads with prinseq lite" + "\n")
             bash_command(
-                "perl " + prinseq_lite + " -fasta " + so_s + ".all.SP.cf.fasta -out_good " + so_s + ".all.SP.cf.rd -out_bad null -derep 124 -line_width 0")
+                "perl " + scriptsdir + "/prinseq-lite.pl -fasta " + so_s + ".all.SP.cf.fasta -out_good " + so_s + ".all.SP.cf.rd -out_bad null -derep 124 -line_width 0")
             filestorezip.append(so_s + ".all.SP.cf.rd.fasta")
             logfile.write("----------------------------------------------------" + "\n")
 
@@ -751,26 +838,25 @@ if __name__ == "__main__":
             ko_s = krkn_output + "/" + out_sample
 
             logfile.write("Performing DIAMOND analysis" + out_sample + "\n")
-            bash_command(
-                "diamond blastx -p " + threads + " -q " + so_s + ".all.SP.cf.rd.fasta -d /data/BLAST/diamond_nr.dmnd -o " + do_s + ".all.SP.cf.rd.dmnd.matches.txt")
+            bash_command("diamond blastx -p " + threads + " -b 48.0 -q " + so_s + ".all.SP.cf.rd.fasta -d " + blastdir + "/diamond_nr.dmnd -o " + do_s + ".all.SP.cf.rd.dmnd.matches.txt")
             logfile.write("Done with DIAMOND analysis" + "\n")
             logfile.write("----------------------------------------------------" + "\n")
 
             # 	### turn diamond results into rma files viewable in MEGAN
-            bash_command(
-                "/home/hpglab/install/megan-ce/tools/blast2rma -i " + do_s + ".all.SP.cf.rd.dmnd.matches.txt -f BlastTab -r " + so_s + ".all.SP.cf.rd.fasta -o " + do_s + ".all.SP.cf.rd.dmnd.matches.rma -g2t /data/BLAST/gi2tax-July2016.bin")
+            bash_command(megandir + "/tools/blast2rma -i " + do_s + ".all.SP.cf.rd.dmnd.matches.txt -f BlastTab -r " + so_s + ".all.SP.cf.rd.fasta -o " + do_s + ".all.SP.cf.rd.dmnd.matches.rma -g2t " + blastdir + "/gi2tax-July2016.bin")
 
             # 	### turn diamond output into Krona html file for visualization
-            bash_command(
-                "perl /data/install/KronaTools-2.6.1/scripts/ImportBLAST.pl " + do_s + ".all.SP.cf.rd.dmnd.matches.txt -o " + do_s + ".all.SP.cf.rd.dmnd.krona.html")
-            # 	### runs kraken
-            bash_command(
-                "kraken --threads 16 --db /data/krakenDB/ " + so_s + ".all.SP.cf.rd.fasta | kraken-translate --db /data/krakenDB/ > " + ko_s + ".kraken.labels | cut -f2")
+            bash_command("ktImportBLAST " + do_s + ".all.SP.cf.rd.dmnd.matches.txt -o " + do_s + ".all.SP.cf.rd.dmnd.krona.html")
 
-            bash_command("python /data/scripts/make_counts.py > " + ko_s + ".kraken4krona")
+            # 	### runs kraken
+            logfile.write("Performing Kraken analysis" + out_sample + "\n")
+            bash_command("kraken --threads " + threads + " --db " + krakendb + " " + so_s + ".all.SP.cf.rd.fasta | kraken-translate --db " + krakendb + " | cut -f2 | python /data/scripts/make_counts.py > " + ko_s + ".kraken4krona")
+            logfile.write("Done with Kraken analysis" + "\n")
+            logfile.write("----------------------------------------------------" + "\n")
 
             # 	# output in krona html visual format
             bash_command("ktImportText " + ko_s + ".kraken4krona -o " + ko_s + ".kraken.krona.html")
+
 
     print "\nCompressing..."
 
@@ -785,8 +871,51 @@ if __name__ == "__main__":
                 shutil.copyfileobj(f_in, f_out)
             os.remove(ftrz)
 
+
+    delfilelist = []
+    #Delete barcode positive files
+    if barcodespresent:
+        delfilelist.append(rawreads + "/bcpos-" + rightnow + "_S00_L00_R1_001.fastq.gz")
+        delfilelist.append(rawreads + "/bcpos-" + rightnow + "_S00_L00_R2_001.fastq.gz")
+
+        delfilelist.append(bc_trim + "/bcpos-" + rightnow + ".woBC_R1.fastq.gz")
+        delfilelist.append(bc_trim + "/bcpos-" + rightnow + ".woBC_R2.fastq.gz")
+        delfilelist.append(bc_trim + "/bcpos-" + rightnow + ".woBC_R1_unmatched.fastq.gz")
+        delfilelist.append(bc_trim + "/bcpos-" + rightnow + ".woBC_R2_unmatched.fastq.gz")
+        delfilelist.append(seqprep_output + "/bcpos-" + rightnow + ".F.fq.gz")
+        delfilelist.append(seqprep_output + "/bcpos-" + rightnow + ".R.fq.gz")
+        delfilelist.append(seqprep_output + "/bcpos-" + rightnow + ".M.fq.gz")
+        delfilelist.append(seqprep_output + "/SP.bcpos-" + rightnow + ".stderr.txt")
+
+    else:
+        delfilelist.append(rawreads + "/nobcpos-" + rightnow + "_S00_L00_R1_001.fastq.gz")
+        delfilelist.append(rawreads + "/nobcpos-" + rightnow + "_S00_L00_R2_001.fastq.gz")
+
+        delfilelist.append(seqprep_output + "/nobcpos-" + rightnow + ".F.fq.gz")
+        delfilelist.append(seqprep_output + "/nobcpos-" + rightnow + ".R.fq.gz")
+        delfilelist.append(seqprep_output + "/nobcpos-" + rightnow + ".M.fq.gz")
+
+        delfilelist.append(bc_trim + "/nobcpos-" + rightnow + ".woBC_R1.fastq.gz")
+        delfilelist.append(bc_trim + "/nobcpos-" + rightnow + ".woBC_R2.fastq.gz")
+        delfilelist.append(bc_trim + "/nobcpos-" + rightnow + ".woBC_R1_unmatched.fastq.gz")
+        delfilelist.append(bc_trim + "/nobcpos-" + rightnow + ".woBC_R2_unmatched.fastq.gz")
+        delfilelist.append(seqprep_output + "/SP.nobcpos-" + rightnow + ".stderr.txt")
+
+
+    delfilelist.append("posdummy.txt")
+
+    for delfile in delfilelist:
+        if os.path.isfile(delfile):
+            os.remove(delfile)
+
+    if barcodespresent:
+        shutil.rmtree("bcpos-" + rightnow)
+    else:
+        shutil.rmtree("nobcpos-" + rightnow)
+
+
     logfile.close()
-    outfile.close()
+    cmdfile.close()
     print "1_map.py complete."
     exit(0)
 
