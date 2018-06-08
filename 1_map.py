@@ -244,6 +244,7 @@ if __name__ == "__main__":
         logfile.write(ref + "\n")
     logfile.write("-------------------\n")
 
+
     chkbasename = os.path.basename(chk_ref)
     chk_name, fileext = os.path.splitext(chkbasename)
 

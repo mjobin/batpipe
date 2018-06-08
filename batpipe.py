@@ -152,15 +152,15 @@ if __name__ == "__main__":
                         help='Number of bases to clip from right end of BAM file after mapDamage run.',
                         default="2")
     parser.add_argument('-maltdb', metavar='<maltdb>', help='MALT database.',
-                        default="/data/malt/nr/")
+                        default="/data/db/malt/nr/")
     parser.add_argument('-maltblast', metavar='<maltblast>', help='MALT BLAST type.',
                         default="BlastX")
     parser.add_argument('-megandir', metavar='<megandir>', help='MEGAN6 directory',
                         default='/opt/megan')
     parser.add_argument('-krakendb', metavar='<krakendb>', help='KrakenDB location',
-                        default='/var/db/krakenDB')
+                        default='/data/db/krakenDB')
     parser.add_argument('-blastdir', metavar='<blastdir>', help='BLAST db directory',
-                        default='/var/db/BLAST')
+                        default='/data/db/BLAST')
     parser.add_argument('-scriptsdir', metavar='<scriptsdir>', help='Default scripts directory',
                         default='/data/scripts')
 
