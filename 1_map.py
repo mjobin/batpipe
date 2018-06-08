@@ -146,7 +146,7 @@ if __name__ == "__main__":
                         help='Number of bases to clip from right end of BAM file after mapDamage run.',
                         default="0")
     parser.add_argument('-maltdb', metavar='<maltdb>', help='MALT database.',
-                        default="/data/malt/nr/")
+                        default="/data/db/malt/nr/")
     parser.add_argument('-maltblast', metavar='<maltblast>', help='MALT BLAST type.',
                         default="BlastX")
     parser.add_argument('-skipprinseq', dest='skipprinseq', help='Skip the prinseq part of script.',
@@ -165,9 +165,9 @@ if __name__ == "__main__":
     parser.add_argument('-megandir', metavar='<megandir>', help='MEGAN6 directory',
                         default='/opt/megan')
     parser.add_argument('-krakendb', metavar='<krakendb>', help='KrakenDB location',
-                        default='/var/db/krakenDB')
+                        default='/data/db/krakenDB')
     parser.add_argument('-blastdir', metavar='<blastdir>', help='BLAST db directory',
-                        default='/var/db/BLAST')
+                        default='/data/db/BLAST')
     parser.add_argument('-scriptsdir', metavar='<scriptsdir>', help='Default scripts directory',
                         default='/data/scripts')
 
@@ -616,7 +616,7 @@ if __name__ == "__main__":
             logfile.write(
                 "Making mapDamage plots for all quality filtered mapped reads " + out_sample + " " + key + "\n")
 
-            bash_command("	mapDamage -i " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.bam -r " + value + " -l " \
+            bash_command("mapDamage -i " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.bam -r " + value + " -l " \
                          + max_read_length + " --merge-reference-sequences --no-stats -d " + wd + "/mapDamage/mapDamage_" + out_sample \
                          + "_" + key + " -y " + max_misincorp_frequency + " -m " + read_plot_length + " -t " + key + "_" + out_sample)
 
