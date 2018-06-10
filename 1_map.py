@@ -720,10 +720,6 @@ if __name__ == "__main__":
             bash_command(
                 "perl /data/scripts/mia_consensus_coverage_filter.pl -c 3 -I < " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.F.inputfornext.txt > " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.F.3xFiltered.consensus.fas")
 
-            # Align mia_ref to MIA output
-
-            # Call haplogroups using everything in mt and/or Y
-
     if malt:
         print "\nPerforming MALT analysis..."
         bar = progressbar.ProgressBar()
@@ -800,6 +796,31 @@ if __name__ == "__main__":
 
     if kraken:
         print "\nDIAMOND and Kraken metagenome analysis, mapping fasta reads to NR NCBI database..."
+        dmnd_output = wd + "/DMND_output"
+        newdir = dmnd_output
+        if overwrite:
+            if os.path.exists(newdir):
+                shutil.rmtree(newdir)
+            os.mkdir(newdir)
+        else:
+            if os.path.exists(newdir):
+                print "ERROR: Directory " + newdir + " exists and overwrite not set to true. Exiting."
+                exit(1)
+            else:
+                os.mkdir(newdir)
+        krkn_output = wd + "/Kraken_output"
+        newdir = krkn_output
+        if overwrite:
+            if os.path.exists(newdir):
+                shutil.rmtree(newdir)
+            os.mkdir(newdir)
+        else:
+            if os.path.exists(newdir):
+                print "ERROR: Directory " + newdir + " exists and overwrite not set to true. Exiting."
+                exit(1)
+            else:
+                os.mkdir(newdir)
+
         bar = progressbar.ProgressBar()
         for i in bar(range(bclength)):
             bcline = bc[i]
@@ -811,31 +832,9 @@ if __name__ == "__main__":
             bwa_output = wd + "/" + out_sample + "/BWA_" + key
             bo_s = bwa_output + "/" + out_sample
 
-            dmnd_output = wd + "/DMND_output"
+
             do_s = dmnd_output + "/" + out_sample
-            newdir = dmnd_output
-            if overwrite:
-                if os.path.exists(newdir):
-                    shutil.rmtree(newdir)
-                os.mkdir(newdir)
-            else:
-                if os.path.exists(newdir):
-                    print "ERROR: Directory " + newdir + " exists and overwrite not set to true. Exiting."
-                    exit(1)
-                else:
-                    os.mkdir(newdir)
-            krkn_output = wd + "/Kraken_output"
-            newdir = krkn_output
-            if overwrite:
-                if os.path.exists(newdir):
-                    shutil.rmtree(newdir)
-                os.mkdir(newdir)
-            else:
-                if os.path.exists(newdir):
-                    print "ERROR: Directory " + newdir + " exists and overwrite not set to true. Exiting."
-                    exit(1)
-                else:
-                    os.mkdir(newdir)
+
             ko_s = krkn_output + "/" + out_sample
 
             logfile.write("Performing DIAMOND analysis" + out_sample + "\n")
