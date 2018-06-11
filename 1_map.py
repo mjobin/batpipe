@@ -85,7 +85,7 @@ if __name__ == "__main__":
                         default='/data/genomes/rCRS.fas')
     parser.add_argument('-index_algorithm', metavar='<index_algorithm>',
                         help='If reference is <2Gb use is, if >2Gb use bwtsw',
-                        default='is')
+                        default='bwtsw')
     parser.add_argument('-seed_disable', metavar='<seed_disable>',
                         help='Following ancient DNA data processing protocols',
                         default="1024")
@@ -748,8 +748,7 @@ if __name__ == "__main__":
 
             malt_s = malt_output + "/" + out_sample
             logfile.write("Performing MALT analysis " + out_sample + "\n")
-            bash_command(
-                "/data/malt/malt-run -i " + so_s + ".all.SP.cf.rd.fasta -d " + maltdb + " -m " + maltblast + " -o " + malt_output + " -t " + threads + " -L /data/install/MEGAN5-academic-license.txt")
+            bash_command("malt-run -i " + so_s + ".all.SP.cf.rd.fasta -d " + maltdb + " -m " + maltblast + " -o " + malt_output + " -t " + threads)
             logfile.write("Done with MALT analysis" + "\n")
             logfile.write("----------------------------------------------------" + "\n")
 
