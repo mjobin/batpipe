@@ -99,7 +99,7 @@ if __name__ == "__main__":
                         default='rCRS')
     parser.add_argument('-index_algorithm', metavar='<index_algorithm>',
                         help='If reference is <2Gb use is, if >2Gb use bwtsw',
-                        default='is')
+                        default='bwtsw')
     parser.add_argument('-seed_disable', metavar='<seed_disable>',
                         help='Following ancient DNA data processing protocols',
                         default="1024")
@@ -147,10 +147,10 @@ if __name__ == "__main__":
                         default="0.01")
     parser.add_argument('-clipleft', metavar='<clipleft>',
                         help='Number of bases to clip from left end of BAM file after mapDamage run.',
-                        default="2")
+                        default="0")
     parser.add_argument('-clipright', metavar='<clipright>',
                         help='Number of bases to clip from right end of BAM file after mapDamage run.',
-                        default="2")
+                        default="0")
     parser.add_argument('-maltdb', metavar='<maltdb>', help='MALT database.',
                         default="/data/db/malt/nr/")
     parser.add_argument('-maltblast', metavar='<maltblast>', help='MALT BLAST type.',
@@ -170,10 +170,10 @@ if __name__ == "__main__":
 
     # THREE
     parser.add_argument('-mpa_pkl', metavar='<mpa_pkl>', help='mpa_pkl',
-                        default='/home/hpglab/install/metaphlan2/db_v20/mpa_v20_m200.pkl')
+                        default='/data/install/metaphlan2/db_v20/mpa_v20_m200.pkl')
     parser.add_argument('-bowtie2db', metavar='<bowtie2db>',
                         help='I thought this was called Bowie2DB and was momentarily happy',
-                        default='/home/hpglab/install/metaphlan2/db_v20/mpa_v20_m200')
+                        default='/data/install/metaphlan2/db_v20/mpa_v20_m200')
 
     # FOUR
     parser.add_argument('-pmdref', metavar='<pmdref>', help='',
