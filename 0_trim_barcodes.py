@@ -117,18 +117,21 @@ if __name__ == "__main__":
 
     logfilename = "out.trim.m" + str(mismatch) + "." + str(today) + ".log"
     print "Logging to:", logfilename
-    logfile = open(logfilename, 'w')
+    logfile = None
 
     cmdfile = None
     if nopos:
         cmdfile = open("0_nopos_cmds", 'w')
+        logfile = open(os.devnull, 'w')
     else:
         cmdfile = open("0_cmds", 'w')
+        logfile = open(logfilename, 'w')
+
 
     logfile.write("Parameters used: \nDebarcoding mismatch tolerance: " + str(mismatch) + "\n")
     logfile.write("Seqprep Minimum Length: " + str(seqprep_min_length) + "\n")
     logfile.write("Seqprep overlap: " + str(seqprep_overlap) + "\n")
-    logfile.write("-------------------------\n")
+    logfile.write("-------------------------\n\n")
 
     refbcs = {}
     refbcin = open(ref_barcodes, 'r')
@@ -396,6 +399,7 @@ if __name__ == "__main__":
                     if not os.path.isfile(r2name):
                         with open(r2name, 'rb') as f_in, gzip.open(r2name + ".gz", 'wb') as f_out:
                             shutil.copyfileobj(f_in, f_out)
+
 
 
         #Check digital positive
