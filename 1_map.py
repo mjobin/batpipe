@@ -837,7 +837,7 @@ if __name__ == "__main__":
             ko_s = krkn_output + "/" + out_sample
 
             logfile.write("Performing DIAMOND analysis" + out_sample + "\n")
-            bash_command("diamond blastx -p " + threads + " -b 48.0 -q " + so_s + ".all.SP.cf.rd.fasta -d " + blastdir + "/diamond_nr.dmnd -o " + do_s + ".all.SP.cf.rd.dmnd.matches.txt")
+            bash_command("diamond blastx -p " + threads + " -t /var/tmp -b 48.0 -q " + so_s + ".all.SP.cf.rd.fasta -d " + blastdir + "/diamond_nr.dmnd -o " + do_s + ".all.SP.cf.rd.dmnd.matches.txt")
             logfile.write("Done with DIAMOND analysis" + "\n")
             logfile.write("----------------------------------------------------" + "\n")
 
