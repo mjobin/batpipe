@@ -339,7 +339,7 @@ if __name__ == "__main__":
             if rrf == 0:
                 percentbarcodes = "N/A"
             else:
-                percentbarcodes = str((100.0 * rdbf) / rrf)
+                percentbarcodes = str((100.0 * rdbf) / rrf) + "%"
 
             bwa_output1 = output + "/BWA_" + key
             bo1_s = bwa_output1 + "/" + out_sample
@@ -588,7 +588,7 @@ if __name__ == "__main__":
     sumfile.write("M reads mapped, rmdup   ")
     sumfile.write("	")
     # 21
-    sumfile.write(" M reads, mapped, rmdup, uniq   ")
+    sumfile.write("All reads, mapped, rmdup, uniq   ")
     sumfile.write("	")
     # 22
     sumfile.write(" Avg length all mapped mito reads   ")
@@ -825,7 +825,7 @@ if __name__ == "__main__":
         if merged_filtered_bam == 0:
             percent_m_dup = "NaN"
         else:
-            percent_m_dup = str(float(rd_merged_filtered_bam) / float(merged_filtered_bam))
+            percent_m_dup = str(100.0 * float(rd_merged_filtered_bam) / float(merged_filtered_bam)) + "%"
         if merged == 0:
             percent_m_endog = "NaN"
         else:
