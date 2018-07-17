@@ -641,11 +641,11 @@ if __name__ == "__main__":
 
             if os.path.isfile(bo_s + "_allreads.cf." + key + ".q" + q + ".s.rd.uniq.bam"):
                 bash_command(
-                    "bam trimBam " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.rd.uniq.bam " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.rd.uniq.clip.bam " + clipleft + " -R " + clipright)
+                    "bam trimBam " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.rd.uniq.bam " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.rd.uniq.clip.bam -L " + clipleft + " -R " + clipright)
                 bash_command("samtools index " + bo_s + "_allreads.cf." + key + ".q" + q + ".s.rd.uniq.bam")
             if os.path.isfile(bo_s + ".M.cf." + key + ".q" + q + ".s.rd.uniq.bam"):
                 bash_command(
-                    "bam trimBam " + bo_s + ".M.cf." + key + ".q" + q + ".s.rd.uniq.bam " + bo_s + ".M.cf." + key + ".q" + q + ".s.rd.uniq.clip.bam " + clipleft + " -R " + clipright)
+                    "bam trimBam " + bo_s + ".M.cf." + key + ".q" + q + ".s.rd.uniq.bam " + bo_s + ".M.cf." + key + ".q" + q + ".s.rd.uniq.clip.bam -L " + clipleft + " -R " + clipright)
                 bash_command("samtools index " + bo_s + ".M.cf." + key + ".q" + q + ".s.rd.uniq.bam")
 
     if not nomia:
@@ -837,7 +837,7 @@ if __name__ == "__main__":
             ko_s = krkn_output + "/" + out_sample
 
             logfile.write("Performing DIAMOND analysis" + out_sample + "\n")
-            bash_command("diamond blastx -p " + threads + " -t /var/tmp -b 48.0 -q " + so_s + ".all.SP.cf.rd.fasta -d " + blastdir + "/diamond_nr.dmnd -o " + do_s + ".all.SP.cf.rd.dmnd.matches.txt")
+            bash_command("diamond blastx -p " + threads + " -t /var/tmp -b 48.0 -q " + so_s + ".all.SP.cf.rd.fasta -d " + blastdir + "/nr.dmnd -o " + do_s + ".all.SP.cf.rd.dmnd.matches.txt")
             logfile.write("Done with DIAMOND analysis" + "\n")
             logfile.write("----------------------------------------------------" + "\n")
 
