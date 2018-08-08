@@ -48,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument('-bc_file', metavar='<bc_file>', help='location of barcode files, Must have a newline at end.', required=True)
     parser.add_argument('-wd', metavar='<wd>', help='Working directory. Defaults to current.', default='.')
     parser.add_argument('-pmdref', metavar='<pmdref>', help='',
-                        default="rCRS")
+                        default="hg19")
     parser.add_argument('-q', metavar='<q>', help='BWA min quality. 20 provides a fairly low cutoff',
                         default="20")
     parser.add_argument('-pmd_threshold', metavar='<pmd_threshold>', help='PMDtools threshold',

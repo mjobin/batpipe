@@ -368,7 +368,7 @@ if __name__ == "__main__":
             merged_filtered_bam = bash_command("samtools view -c " + bo1_s + ".M.cf.*.q*.s.bam").strip()
             if merged_filtered_bam:
                 merged_filtered_bam = int(merged_filtered_bam)
-            rd_merged_filtered_bam = bash_command("samtools view -c " + bo1_s + ".M.cf.*.q*.s.bam").strip()
+            rd_merged_filtered_bam = bash_command("samtools view -c " + bo1_s + ".M.cf.*.q*.s.rd.bam").strip()
             if rd_merged_filtered_bam:
                 rd_merged_filtered_bam = int(rd_merged_filtered_bam)
             all_filtered_bam = bash_command("samtools view -c " + bo1_s + "_allreads.cf.*.q*.s.bam").strip()
@@ -390,7 +390,7 @@ if __name__ == "__main__":
             if merged == 0:
                 percent_m_endog = "NaN"
             else:
-                percent_m_endog = str((100.0 * float(merged_filtered_bam)) / float(merged))
+                percent_m_endog = str((100.0 * float(merged_filtered_bam)) / float(reads_debarcoded))
             if reads_debarcoded == 0:
                 percent_all_endog = "NaN"
             else:
@@ -829,7 +829,7 @@ if __name__ == "__main__":
         if merged == 0:
             percent_m_endog = "NaN"
         else:
-            percent_m_endog = str((100.0 * float(merged_filtered_bam)) / float(merged))
+            percent_m_endog = str((100.0 * float(merged_filtered_bam)) / float(reads_debarcoded))
         if reads_debarcoded == 0:
             percent_all_endog = "NaN"
         else:
@@ -845,6 +845,23 @@ if __name__ == "__main__":
                 "samtools view " + bo1_s + "_allreads.cf.*.q*.s.rd.bam | awk '{SUM+=length($10);DIV++}END{print SUM/DIV}'").strip()
         else:
             avglen_all_mapped = "NaN"
+
+
+        if not os.path.isfile(so_s + ".M.fq"):  # merged reads
+            with gzip.open(so_s + ".M.fq.gz", 'rb') as f_in, open(so_s + ".M.fq", 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+
+        chkpipe = subprocess.Popen(
+            ['/bin/bash', '-c', "awk 'BEGIN { t=0.0;sq=0.0; n=0;} ;NR%4==2 {n++;L=length($0);t+=L;sq+=L*L;}END{m=t/n;printf(\"%f\",m);}' " + so_s + ".M.fq"], stdout=PIPE)
+        chkout = chkpipe.communicate()[0]
+        if chkout:
+            avglen_M_unmapped = bash_command("awk 'BEGIN { t=0.0;sq=0.0; n=0;} ;NR%4==2 {n++;L=length($0);t+=L;sq+=L*L;}END{m=t/n;printf(\"%f\",m);}' " + so_s + ".M.fq")
+        else:
+            avglen_M_unmapped = "NaN"
+
+        with open(so_s + ".M.fq", 'rb') as f_in, gzip.open(so_s + ".M.fq.gz", 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
         # summary BWA (mito) statistics
         bwa_output2 = output + "/BWA_rCRS"
         bo2_s = bwa_output2 + "/" + out_sample
@@ -1036,7 +1053,7 @@ if __name__ == "__main__":
         pmd_filtered_bam = bash_command(
             "samtools view -c " + bo2_s + "_allreads.cf.*.q*.pmds" + pmd_threshold + "filter.bam").strip()
         if pmd_filtered_bam:
-            pmd_filtered_bam = int(rd_all_filtered_bam)
+            pmd_filtered_bam = int(pmd_filtered_bam)
 
         # 1
         sumfile.write(str(today))
@@ -1132,6 +1149,7 @@ if __name__ == "__main__":
         sumfile.write(str("	"))
 
         # 32
+        sumfile.write(str(avglen_M_unmapped))
         sumfile.write(str("	"))
 
         # 33

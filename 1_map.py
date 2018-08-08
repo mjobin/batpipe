@@ -621,6 +621,11 @@ if __name__ == "__main__":
                          + max_read_length + " --merge-reference-sequences --no-stats -d " + wd + "/mapDamage/mapDamage_" + out_sample \
                          + "_" + key + " -y " + max_misincorp_frequency + " -m " + read_plot_length + " -t " + key + "_" + out_sample)
 
+            #Rename mapDamage output
+            shutil.move(wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/Fragmisincorporation_plot.pdf", wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/" + out_sample + "-Fragmisincorporation_plot.pdf")
+            shutil.move(wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/Length_plot.pdf",
+                        wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/" + out_sample + "-Length_plot.pdf")
+
             logfile.write("mapDamage plots finished " + out_sample + " " + key + "\n")
             logfile.write("----------------------------------------------------" + "\n")
 

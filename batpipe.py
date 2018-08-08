@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     # FOUR
     parser.add_argument('-pmdref', metavar='<pmdref>', help='',
-                        default="rCRS")
+                        default="hg19")
     parser.add_argument('-pmd_threshold', metavar='<pmd_threshold>', help='PMDtools threshold',
                         default="3")
 
