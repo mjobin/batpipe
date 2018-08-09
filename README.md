@@ -8,3 +8,6 @@ The user may set the working directory and locations of the input files. Input i
 For full details regarding the operation of the pipeline, please consult: https://sites.google.com/a/ucsc.edu/hpglab-wiki/
 
 Please note! Batpipe integrates numerous software programs written neither by me nor by the UCSC Human Paleogenomics Lab. These programs must be installed and working on your system for batpipe to operate. Here follows a list of the needed software:
+
+bc_bin_clip    by Sam Vohr
+SeqPrep2    https://github.com/jeizenga/SeqPrep2
