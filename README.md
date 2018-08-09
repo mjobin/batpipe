@@ -9,6 +9,43 @@ For full details regarding the operation of the pipeline, please consult: https:
 
 Please note! Batpipe integrates numerous software programs written neither by me nor by the UCSC Human Paleogenomics Lab. These programs must be installed and working on your system for batpipe to operate. Here follows a list of the needed software:
 
-bc_bin_clip    by Sam Vohr
+bc_bin_clip:    by Sam Vohr
 
-SeqPrep2    https://github.com/jeizenga/SeqPrep2
+SeqPrep2:    https://github.com/jeizenga/SeqPrep2
+
+samtools:    https://github.com/samtools/
+
+prinseq-lite:    http://prinseq.sourceforge.net
+
+combinePairedEndReads.pl:    
+
+BWA:    https://github.com/lh3/bwa
+
+DEDUP:    
+
+mapDamage:    https://github.com/ginolhac/mapDamage
+
+bamUtils:    https://genome.sph.umich.edu/wiki/BamUtil
+
+fastq_to_fasta:    http://hannonlab.cshl.edu/fastx_toolkit/
+
+MEGAN-CE, DIAMOND and MALT:    https://ab.inf.uni-tuebingen.de/software/
+
+MIA:    https://github.com/mpieva/mapping-iterative-assembler
+
+ry_compute.py:    https://github.com/pontussk/ry_compute
+
+R:    https://cran.r-project.org
+
+Kraken:   http://ccb.jhu.edu/software/kraken/
+
+Krona:    https://github.com/marbl/Krona/wiki/KronaTools
+
+ContamMix:    http://life.umd.edu/biology/plfj/
+
+Mafft:    https://mafft.cbrc.jp/alignment/software/
+
+Metaphlan:    https://bitbucket.org/biobakery/metaphlan2
+
+PMDTools:    https://github.com/pontussk/PMDtools
+
