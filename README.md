@@ -17,11 +17,11 @@ samtools:    https://github.com/samtools/
 
 prinseq-lite:    http://prinseq.sourceforge.net
 
-combinePairedEndReads.pl:    
+combinePairedEndReads.pl:
 
 BWA:    https://github.com/lh3/bwa
 
-DEDUP:    
+DEDUP:
 
 mapDamage:    https://github.com/ginolhac/mapDamage
 
@@ -48,4 +48,3 @@ Mafft:    https://mafft.cbrc.jp/alignment/software/
 Metaphlan:    https://bitbucket.org/biobakery/metaphlan2
 
 PMDTools:    https://github.com/pontussk/PMDtools
-
