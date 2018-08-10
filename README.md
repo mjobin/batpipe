@@ -17,7 +17,7 @@ samtools:    https://github.com/samtools/
 
 prinseq-lite:    http://prinseq.sourceforge.net
 
-combinePairedEndReads.pl:
+combinePairedEndReads.pl: http://seqanswers.com/forums/showthread.php?t=10591
 
 BWA:    https://github.com/lh3/bwa
 
