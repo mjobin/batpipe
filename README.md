@@ -9,7 +9,7 @@ For full details regarding the operation of the pipeline, please consult: https:
 
 Please note! Batpipe integrates numerous software programs written neither by me nor by the UCSC Human Paleogenomics Lab. These programs must be installed and working on your system for batpipe to operate. Here follows a list of the needed software:
 
-bc_bin_clip:    by Sam Vohr
+bc_bin_clip:    https://github.com/svohr/bc_bin_clip
 
 SeqPrep2:    https://github.com/jeizenga/SeqPrep2
 
