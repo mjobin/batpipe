@@ -291,7 +291,7 @@ if __name__ == "__main__":
 
     posdummy = open("posdummy.txt", 'w')
     if barcodespresent:
-        if bformat:
+        if tr:
             posdummy.write("bcpos-"+rightnow+"	bcpos-"+rightnow+"	TCGAACA	AGCACAT ATGTGCT TGTTCGA")
         else:
             posdummy.write("bcpos-"+rightnow+"	bcpos-"+rightnow+"	198	205")
@@ -622,8 +622,10 @@ if __name__ == "__main__":
                          + "_" + key + " -y " + max_misincorp_frequency + " -m " + read_plot_length + " -t " + key + "_" + out_sample)
 
             #Rename mapDamage output
-            shutil.move(wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/Fragmisincorporation_plot.pdf", wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/" + out_sample + "-Fragmisincorporation_plot.pdf")
-            shutil.move(wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/Length_plot.pdf",
+            if os.path.isfile(wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/Fragmisincorporation_plot.pdf"):
+                shutil.move(wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/Fragmisincorporation_plot.pdf", wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/" + out_sample + "-Fragmisincorporation_plot.pdf")
+            if os.path.isfile(wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/Length_plot.pdf"):
+                shutil.move(wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/Length_plot.pdf",
                         wd + "/mapDamage/mapDamage_" + out_sample + "_" + key + "/" + out_sample + "-Length_plot.pdf")
 
             logfile.write("mapDamage plots finished " + out_sample + " " + key + "\n")

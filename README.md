@@ -48,3 +48,7 @@ Mafft:    https://mafft.cbrc.jp/alignment/software/
 Metaphlan:    https://bitbucket.org/biobakery/metaphlan2
 
 PMDTools:    https://github.com/pontussk/PMDtools
+
+BIOM:    http://biom-format.org
+
+BowTie2:    http://bowtie-bio.sourceforge.net/bowtie2/index.shtml    

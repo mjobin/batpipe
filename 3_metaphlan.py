@@ -56,9 +56,9 @@ if __name__ == "__main__":
     parser.add_argument('-overwrite', dest='overwrite', help='Overwrite existing files and directories.',
                         action='store_true')
     parser.add_argument('-mpa_pkl', metavar='<mpa_pkl>', help='mpa_pkl',
-                        default='/data/install/metaphlan2/db_v20/mpa_v20_m200.pkl')
+                        default='/data/db/db_v20/mpa_v20_m200.pkl')
     parser.add_argument('-bowtie2db', metavar='<bowtie2db>', help='I thoght this was called Bowie2DB and was momentarily happy',
-                        default='/data/install/metaphlan2/db_v20/mpa_v20_m200')
+                        default='/data/db/db_v20')
     parser.add_argument('-seqprep_output', metavar='<seqprep_output>', help='seqprep_output',
                         default='/data/adaptertrimmed')
     parser.add_argument('-seqprep_output_in_output', metavar='<seqprep_output_in_output>', help='Prepend output directory to seqprep_output',
