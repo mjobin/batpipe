@@ -291,7 +291,7 @@ if __name__ == "__main__":
 
     posdummy = open("posdummy.txt", 'w')
     if barcodespresent:
-        if tr:
+        if bformat:
             posdummy.write("bcpos-"+rightnow+"	bcpos-"+rightnow+"	TCGAACA	AGCACAT ATGTGCT TGTTCGA")
         else:
             posdummy.write("bcpos-"+rightnow+"	bcpos-"+rightnow+"	198	205")
