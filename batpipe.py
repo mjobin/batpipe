@@ -132,6 +132,13 @@ if __name__ == "__main__":
     parser.add_argument('-kraken', dest='kraken', help='Release the kraken.',
                         action='store_true')
     parser.set_defaults(kraken=False)
+    parser.add_argument('-diamond', dest='diamond', help='Run Diamond',
+                        action='store_true')
+    parser.set_defaults(diamond=False)
+    parser.add_argument('-diamondblock', metavar='<diamondblock>', help="Diamond block size",
+                        default='48.0')
+    parser.add_argument('-diamondtmp', metavar='<diamondtmp>', help="Temp directory for Diamond",
+                        default='/dev/shm')
     parser.add_argument('-nodedup', dest='nodedup', help='Use samtools instead of DeDup to remove duplicates.',
                         action='store_true')
     parser.set_defaults(nodedup=False)
@@ -266,6 +273,9 @@ if __name__ == "__main__":
     malt = bool(args.malt)
     nosexest = bool(args.nosexest)
     kraken = bool(args.kraken)
+    diamond = bool(args.diamond)
+    diamondblock = args.diamondblock
+    diamondtmp = args.diamondtmp
     nodedup = bool(args.nodedup)
     skipprinseq = bool(args.skipprinseq)
     refs = args.refs
@@ -306,6 +316,9 @@ if __name__ == "__main__":
     onedict["malt"] = malt
     onedict["nosexest"] = nosexest
     onedict["kraken"] = kraken
+    onedict["diamond"] = diamond
+    onedict["diamondblock"] = diamondblock
+    onedict["diamondtmp"] = diamondtmp
     onedict["nodedup"] = nodedup
     onedict["skipprinseq"] = skipprinseq
     onedict["overwrite"] = overwrite

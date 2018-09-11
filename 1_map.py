@@ -126,6 +126,13 @@ if __name__ == "__main__":
     parser.add_argument('-kraken', dest='kraken', help='Release the kraken!',
                         action='store_true')
     parser.set_defaults(kraken=False)
+    parser.add_argument('-diamond', dest='diamond', help='Run Diamond',
+                        action='store_true')
+    parser.set_defaults(diamond=False)
+    parser.add_argument('-diamondblock', metavar='<diamondblock>', help="Diamond block size",
+                        default='48.0')
+    parser.add_argument('-diamondtmp', metavar='<diamondtmp>', help="Temp directory for Diamond",
+                        default='/dev/shm')
     parser.add_argument('-overwrite', dest='overwrite', help='Overwrite existing files and directories.',
                         action='store_true')
     parser.set_defaults(overwrite=False)
@@ -199,6 +206,9 @@ if __name__ == "__main__":
     malt = bool(args.malt)
     nosexest = bool(args.nosexest)
     kraken = bool(args.kraken)
+    diamond = bool(args.diamond)
+    diamondblock = args.diamondblock
+    diamondtmp = args.diamondtmp
     overwrite = bool(args.overwrite)
     verbose = bool(args.verbose)
     refs = args.refs
@@ -724,8 +734,7 @@ if __name__ == "__main__":
                 "ma -M " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.* -f 5 > " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.F.mia_consensus.fasta")
             bash_command(
                 "ma -M " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.* -f 41 > " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.F.inputfornext.txt")
-            bash_command(
-                "perl /data/scripts/mia_consensus_coverage_filter.pl -c 3 -I < " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.F.inputfornext.txt > " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.F.3xFiltered.consensus.fas")
+            bash_command("perl /data/scripts/mia_consensus_coverage_filter.pl -c 3 -I < " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.F.inputfornext.txt > " + mia_s + ".all.SP.cf.rd." + mia_ref + ".maln.F.3xFiltered.consensus.fas")
 
     if malt:
         print "\nPerforming MALT analysis..."
@@ -800,8 +809,8 @@ if __name__ == "__main__":
             if os.path.isfile("Rplots.pdf"):
                 os.remove("Rplots.pdf")
 
-    if kraken:
-        print "\nDIAMOND and Kraken metagenome analysis, mapping fasta reads to NR NCBI database..."
+    if diamond:
+        print "\nDIAMOND metagenome analysis, mapping fasta reads to NR NCBI database..."
         dmnd_output = wd + "/DMND_output"
         newdir = dmnd_output
         if overwrite:
@@ -814,6 +823,35 @@ if __name__ == "__main__":
                 exit(1)
             else:
                 os.mkdir(newdir)
+
+        bar = progressbar.ProgressBar()
+        for i in bar(range(bclength)):
+            bcline = bc[i]
+            bccols = bcline.split()
+            in_sample = bccols[0]
+            out_sample = bccols[1]
+            output = wd + "/" + out_sample
+            so_s = seqprep_output + "/" + in_sample
+            bwa_output = wd + "/" + out_sample + "/BWA_" + key
+            bo_s = bwa_output + "/" + out_sample
+
+            do_s = dmnd_output + "/" + out_sample
+
+            logfile.write("Performing DIAMOND analysis" + out_sample + "\n")
+            bash_command("diamond blastx -p " + threads + " -t " + diamondtmp + " -b " + diamondblock + " -q " + so_s + ".all.SP.cf.rd.fasta -d " + blastdir + "/nr.dmnd -o " + do_s + ".all.SP.cf.rd.dmnd.matches.txt")
+            logfile.write("Done with DIAMOND analysis" + "\n")
+            logfile.write("----------------------------------------------------" + "\n")
+
+            # 	### turn diamond results into rma files viewable in MEGAN
+            bash_command(megandir + "/tools/blast2rma -i " + do_s + ".all.SP.cf.rd.dmnd.matches.txt -f BlastTab -r " + so_s + ".all.SP.cf.rd.fasta -o " + do_s + ".all.SP.cf.rd.dmnd.matches.rma -g2t " + blastdir + "/gi2tax-July2016.bin")
+
+            # 	### turn diamond output into Krona html file for visualization
+            bash_command(
+                "ktImportBLAST " + do_s + ".all.SP.cf.rd.dmnd.matches.txt -o " + do_s + ".all.SP.cf.rd.dmnd.krona.html")
+
+
+
+    if kraken:
         krkn_output = wd + "/Kraken_output"
         newdir = krkn_output
         if overwrite:
@@ -838,21 +876,7 @@ if __name__ == "__main__":
             bwa_output = wd + "/" + out_sample + "/BWA_" + key
             bo_s = bwa_output + "/" + out_sample
 
-
-            do_s = dmnd_output + "/" + out_sample
-
             ko_s = krkn_output + "/" + out_sample
-
-            logfile.write("Performing DIAMOND analysis" + out_sample + "\n")
-            bash_command("diamond blastx -p " + threads + " -t /var/tmp -b 48.0 -q " + so_s + ".all.SP.cf.rd.fasta -d " + blastdir + "/nr.dmnd -o " + do_s + ".all.SP.cf.rd.dmnd.matches.txt")
-            logfile.write("Done with DIAMOND analysis" + "\n")
-            logfile.write("----------------------------------------------------" + "\n")
-
-            # 	### turn diamond results into rma files viewable in MEGAN
-            bash_command(megandir + "/tools/blast2rma -i " + do_s + ".all.SP.cf.rd.dmnd.matches.txt -f BlastTab -r " + so_s + ".all.SP.cf.rd.fasta -o " + do_s + ".all.SP.cf.rd.dmnd.matches.rma -g2t " + blastdir + "/gi2tax-July2016.bin")
-
-            # 	### turn diamond output into Krona html file for visualization
-            bash_command("ktImportBLAST " + do_s + ".all.SP.cf.rd.dmnd.matches.txt -o " + do_s + ".all.SP.cf.rd.dmnd.krona.html")
 
             # 	### runs kraken
             logfile.write("Performing Kraken analysis" + out_sample + "\n")
