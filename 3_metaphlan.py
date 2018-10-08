@@ -100,6 +100,14 @@ if __name__ == "__main__":
 
     logfile = open(logfilename, 'w')
 
+    logfile.write("Arguments used:\n")
+    logfile.write("__________________________________________:\n")
+    for arg in vars(args):
+        logfile.write(arg)
+        logfile.write("\t")
+        logfile.write(str(getattr(args, arg)))
+        logfile.write("\n")
+
 
     cmdfile = open("3_cmds", 'w')
 

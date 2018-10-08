@@ -127,6 +127,13 @@ if __name__ == "__main__":
         cmdfile = open("0_cmds", 'w')
         logfile = open(logfilename, 'w')
 
+    logfile.write("Arguments used:\n")
+    logfile.write("__________________________________________:\n")
+    for arg in vars(args):
+        logfile.write(arg)
+        logfile.write("\t")
+        logfile.write(str(getattr(args, arg)))
+        logfile.write("\n")
 
     logfile.write("Parameters used: \nDebarcoding mismatch tolerance: " + str(mismatch) + "\n")
     logfile.write("Seqprep Minimum Length: " + str(seqprep_min_length) + "\n")
@@ -197,7 +204,7 @@ if __name__ == "__main__":
             missingfilepatterns.append(r1pattern)
         filestorezip.append(r1name)
 
-        logfile.write("Gunzipping R2 " + in_sample + "\n")
+
         r2pattern = in_sample + "_*_L00*_R2_001.fastq"
         logfile.write("Matching to " + r2pattern + "\n")
         files = os.listdir(rawreads)

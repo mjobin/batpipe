@@ -244,6 +244,13 @@ if __name__ == "__main__":
     logfile = open(logfilename, 'w')
     print "Logging to: ", logfilename
 
+    logfile.write("Arguments used:\n")
+    logfile.write("__________________________________________:\n")
+    for arg in vars(args):
+        logfile.write(arg)
+        logfile.write("\t")
+        logfile.write(str(getattr(args, arg)))
+        logfile.write("\n")
 
     refdic = {}
     logfile.write("Reference sequences used: \n")
