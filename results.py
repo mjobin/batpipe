@@ -276,11 +276,9 @@ if __name__ == "__main__":
                 exit(1)
 
             rawin = open(rawfile, 'r')
-            rawc = []
+            rawclength = 0
             for rawcinline in rawin:
-                rawc.append(rawcinline)
-
-            rawclength = len(rawc)
+                rawclength += 1
             rawreads = str(float(rawclength) / 4.0)
 
             if leehom:
@@ -716,11 +714,9 @@ if __name__ == "__main__":
             exit(1)
 
         rawin = open(rawfile, 'r')
-        rawc = []
+        rawclength = 0
         for rawcinline in rawin:
-            rawc.append(rawcinline)
-
-        rawclength = len(rawc)
+            rawclength += 1
         rawreads = str(float(rawclength) / 4.0)
 
         if leehom:
