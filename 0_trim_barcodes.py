@@ -192,6 +192,7 @@ if __name__ == "__main__":
         r1name = None
         for name in files:
             if (fnmatch.fnmatch(name, r1pattern)):
+                r1name = rawreads + "/" + name
                 continue
         if not r1name:
             r1pattern = in_sample + "_*_L00*_R1_001.fastq.gz"
@@ -276,6 +277,8 @@ if __name__ == "__main__":
             barcodespresent = False
             sp_r1 = univ_illumina
             sp_r2 = univ_illumina
+
+
 
 
 #Gunzip only if corresponding fastq file not already there
